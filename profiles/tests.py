@@ -105,3 +105,19 @@ class ProfileStatusViewSetTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = json.loads(response.content)
         self.assertEqual(serializer_data, response_data)
+
+    def test_status_update_owner(self):
+        data = {'status_content': 'content updated'}
+        response = self.client.put(reverse('status-detail', kwargs={'pk': 1}),
+                                   data=data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['status_content'], 'content updated')
+
+    def test_status_update_random_user(self):
+        random_user = User.objects.create_user(username='random',
+                                               password='pasword123123123')
+        self.client.force_authenticate(user=random_user)
+        data = {'status_content': 'you have been hacked'}
+        response = self.client.put(reverse('status-detail', kwargs={'pk': 1}),
+                                   data=data)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
