@@ -1,10 +1,22 @@
+from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 from rest_framework import viewsets
 from rest_framework import mixins
 from profiles.models import Profile, ProfileStatus
 from profiles.api.permissions import IsOwnProfileOrReadOnly, IsOwnerOrReadOnly
-from profiles.api.serializers import ProfileSerializer, ProfileStatusSerializer
+from profiles.api.serializers import (ProfileSerializer,
+                                      ProfileStatusSerializer,
+                                      ProfileAvatarSerializer)
+
+
+class AvatarUpdateView(generics.UpdateAPIView):
+    serializer_class = ProfileAvatarSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        profile_obj = self.request.user.profile
+        return profile_obj
 
 
 class ProfileViewSet(mixins.UpdateModelMixin,
