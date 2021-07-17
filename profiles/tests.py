@@ -44,3 +44,25 @@ class ProfileViewSetTestCase(APITestCase):
         self.client.force_authenticate(user=None)
         response = self.client.get(self.list_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_profile_detail_retrieve(self):
+        response = self.client.get(reverse('profile-detail', kwargs={'pk': 1}))
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['user'], 'davinci')
+
+    def test_profile_update_by_owner(self):
+        response = self.client.put(reverse('profile-detail', kwargs={'pk': 1}),
+                                   {'city': 'Anchiano',
+                                    'bio': 'genius'})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(json.loads(response.content),
+                         {'id': 1, 'user': 'davinci', 'bio': 'genius',
+                          'city': 'Anchiano', 'avatar': None})
+
+    def test_profile_update_by_random_user(self):
+        random_user = User.objects.create_user(username='random',
+                                               password='pasword123123123')
+        self.client.force_authenticate(user=random_user)
+        response = self.client.put(reverse('profile-detail', kwargs={'pk': 1}),
+                                   {'bio': 'hacked!!!'})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
